@@ -165,3 +165,4 @@ cython_debug/
 #data - private
 /data/german
 /data/portuguese
+/cleaned
