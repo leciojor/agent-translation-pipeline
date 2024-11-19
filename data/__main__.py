@@ -2,6 +2,7 @@ from filters import Filter
 import os
 import subprocess
 from tqdm import tqdm
+from argparse import ArgumentParser
 
 
 def get_tmx_files_text(directory, limit=False):
@@ -54,5 +55,14 @@ if __name__ == "__main__":
     print("FINAL PAIRS AMOUNT PORTUGUESE: ", final_pairs_amount)
     final_pairs_amount = main('german')
     print("FINAL PAIRS AMOUNT GERMAN: ", final_pairs_amount)
+
+    parser = ArgumentParser()
+    parser.add_argument('language', help='Language')
+    args = parser.parse_args()
+    lang = args.lang
+
+    main(lang)
+
+    
 
     
