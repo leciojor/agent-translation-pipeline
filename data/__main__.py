@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 
 def get_tmx_files_text(directory, limit=False):
     tmx_texts = []
-    for root, dirs, files in os.walk(directory):
+    for root, dirs, files in os.walk(f"data/{directory}"):
         for file in files:
             if file.endswith(".tmx"):
                 with open(os.path.join(root, file), 'r', encoding='utf-8') as f:
@@ -17,26 +17,27 @@ def get_tmx_files_text(directory, limit=False):
                     tmx_texts.append(text)
     return tmx_texts
 
-def forming_txt_files(texts, lang, eng='src', other='tgt', new=False):
+def forming_txt_files(texts, lang, en_name='src', other='tgt'):
     
     for pair in tqdm(texts, desc="Writing cleaned txt to text files", unit="pair"):
         eng = pair[0]
-        o = pair[1]
+        ot = pair[1]
 
-        if new:
-            with open(f"cleaned/Lecio-English-{eng}.txt", 'w') as f:
-                pass
-            with open(f"cleaned/Lecio-{lang}-{other}.txt", 'w') as f:
-                pass
-
-        with open(f"cleaned/Lecio-English-{eng}.txt", 'a') as f:
+        with open(f"./data/cleaned/Lecio-English-{lang}-{en_name}.txt", 'a') as f:
             f.write(eng + '\n')
-        with open(f"cleaned/Lecio-{lang}-{other}.txt", 'a') as f:
-            f.write(o + '\n')
+        with open(f"./data/cleaned/Lecio-{lang}-{other}.txt", 'a') as f:
+            f.write(ot + '\n')
 
-def main(folder = 'portuguese'):
+def main(folder = 'portuguese', new=False, en_name='src', other='tgt'):
     tmx_texts = get_tmx_files_text(folder, limit=True)
     final_pairs_amount = 0
+    os.makedirs("./data/cleaned", exist_ok=True)
+    if new:
+        with open(f"./data/cleaned/Lecio-English-{folder}-{en_name}.txt", 'w') as f:
+            pass
+        with open(f"./data/cleaned/Lecio-{folder}-{other}.txt", 'w') as f:
+            pass
+    
     for text in tmx_texts:
         filter = Filter(text)
         print("Pairs: ", filter.texts)
@@ -51,17 +52,19 @@ def main(folder = 'portuguese'):
 
 
 if __name__ == "__main__":
-    final_pairs_amount = main()
-    print("FINAL PAIRS AMOUNT PORTUGUESE: ", final_pairs_amount)
-    final_pairs_amount = main('german')
-    print("FINAL PAIRS AMOUNT GERMAN: ", final_pairs_amount)
-
     parser = ArgumentParser()
-    parser.add_argument('language', help='Language')
+    parser.add_argument('language', help='Language to be cleaned')
+    parser.add_argument('new_files', help='Boolean (True/False) variable. Adds new cleaned files instead of just appending lines to the current ones.')
     args = parser.parse_args()
-    lang = args.lang
+    lang = args.language
+    new = args.new_files
 
-    main(lang)
+    
+    if new:
+        final_pairs_amount = main(lang, new=new)
+    else:
+        final_pairs_amount = main(lang)
+    print(f"FINAL PAIRS AMOUNT {lang}: ", final_pairs_amount)
 
     
 
