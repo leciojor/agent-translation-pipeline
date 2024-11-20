@@ -3,7 +3,8 @@
 # To run the logic locally:
 
 * install the dependencies from requirements.txt
-* streamlit run main.py
+* cd frontend
+* streamlit run __main__.py
 
 
 # OR in case you have docker installed and running
