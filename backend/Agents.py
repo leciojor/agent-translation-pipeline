@@ -1,5 +1,10 @@
-from crewai import Agent, Tool
-from crewai.knowledge import StringKnowledgeSource
+from crewai import Agent, LLM
+from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+from langchain_ollama import ChatOllama
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class TranslationAgent:
 
@@ -9,16 +14,16 @@ class TranslationAgent:
             role=f"{lang} to English translator",
             goal=f"Translate sentences in {lang} to English",
             backstory=f"You translate texts from {lang} to English",
-            llm=llm,
+            llm=LLM(
+                model=llm,
+                base_url=os.environ['OLLAMA_HOST'], temperature=0.1),
             verbose=verbose,
         )
         else:
             self.agent  = Agent(
             role=f"{lang} to English translator",
             goal=f"Translate sentences in {lang} to English",
-            backstory=f"You translate texts from {lang} to English",
-            llm=llm,
-            verbose=verbose,
+            backstory=f"You translate texts from {lang} to English",            verbose=verbose,
         )
 
         
@@ -32,26 +37,35 @@ class EvaluationAgent:
             It provides a detailed categorization of errors based on their type and severity, 
             offering a structured way to identify and analyze issues in translations.
         """,
-        metadata={}
+        metadata={
+            "domain": "translation_quality",
+            "framework": "MQM",
+            "source": "internal_documentation",
+        }
     )
 
 
     def __init__(self, lang, llm, verbose=True) -> None:
+        self.lang = lang
         if llm:
             self.agent  = Agent(
-            role="Machine translation evaluator.",
+            role="Machine translation evaluator",
             goal=f"Evaluate a machine translated sentence from {lang} to english using Multidimensional Quality Metrics (MQM)",
             backstory=f"You evaluate machine translated sentences from {lang} to english using Multidimensional Quality Metrics (MQM)",
             knowledge_sources = [EvaluationAgent.mqm_info, self.get_mqm_template()],
-            llm=llm,
+            llm=LLM(
+                model=llm,
+                base_url=os.environ['OLLAMA_HOST']),
             verbose=verbose,
         )
         else:
             self.agent  = Agent(
-            role="Machine translation evaluator.",
+            role="Machine translation evaluator",
             goal=f"Evaluate a machine translated sentence from {lang} to english",
             backstory=f"You evaluates machine translated sentences from {lang} to english",
-            llm=llm,
+            llm=LLM(
+                model=llm,
+                base_url=os.environ['OLLAMA_HOST']),
             verbose=verbose,
         )
             
@@ -117,6 +131,11 @@ class EvaluationAgent:
         ==============================
 
     """,
+        metadata={
+            "domain": "translation_quality",
+            "framework": "MQM",
+            "source": "internal_documentation"
+        }
     )
         return mqm_template
 
@@ -131,7 +150,11 @@ class RefinementAgent:
             It provides a detailed categorization of errors based on their type and severity, 
             offering a structured way to identify and analyze issues in translations.
         """,
-        metadata={}
+        metadata={
+            "domain": "translation_quality",
+            "framework": "MQM",
+            "source": "internal_documentation",
+        }
     )
 
     def __init__(self, llm, lang, verbose=True) -> None:
@@ -141,7 +164,9 @@ class RefinementAgent:
             goal=f"Refine sentence translations from {lang} to english based on MQM scorecard of the translation",
             backstory=f"You refine sentence translations from {lang} to english based on MQM scorecard of the translation",
             knowledge_sources = [RefinementAgent.mqm_info],
-            llm=llm,
+            llm=LLM(
+                model=llm,
+                base_url=os.environ['OLLAMA_HOST']),
             verbose=verbose,
         )
         else:
@@ -149,7 +174,9 @@ class RefinementAgent:
             role=f"Sentence Translation Refiner",
             goal=f"Refine sentence translations from {lang} to english",
             backstory=f"You refine sentence translations from {lang} to english",
-            llm=llm,
+            llm=LLM(
+                model=llm,
+                base_url=os.environ['OLLAMA_HOST']),
             verbose=verbose,
         )
 

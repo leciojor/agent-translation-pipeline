@@ -1,22 +1,29 @@
 '''
 Crew call logic
 '''
+import json
 
 from argparse import ArgumentParser
-from backend.Agents import TranslationAgent, EvaluationAgent, RefinementAgent
-from backend.Tasks import Translation, Evaluation, Refinement
-from backend.Crews import Translation, Evaluation, Refinement
+from Agents import TranslationAgent, EvaluationAgent, RefinementAgent
+from Tasks import Translation, Evaluation, Refinement
 import translators as ts
 import threading
+from crewai import Crew
 
 
-def pipe1(translator, inputs, input, lang, final_output):
-    task = Translation(translator.agent, input, lang)
-    results = task.execute(inputs = inputs)
-    #pipe2()
-    return results
+def get_best_output(final_outputs):
+    return final_outputs[0]
 
-def pipe2(evaluator, translation, src, final_output):
+def pipe1(translator, input, lang, final_outputs):
+    print("Executing")
+    translation = Translation(translator.agent, input, lang)
+    crew = Crew(agents=[translator.agent], tasks=[translation.task])
+    output = crew.kickoff()
+    translation_result = output.raw[7:-4]
+    result = pipe2()
+    final_outputs.append(result)
+
+def pipe2(evaluator, translation, src, final_outputs):
     # task = Evaluation(evaluator.agent, src, translation)
     # inputs = {"Source Sentence": src, "Translation": translation}
     # results = task.execute(inputs = inputs)
@@ -24,35 +31,40 @@ def pipe2(evaluator, translation, src, final_output):
     pass
     '''TODO: add crew setup for pipe 2 '''
 
-def agent_translation(lang, llm, input, k_models, k_iterations, final_output):
+def agent_translation(lang, llm, input, k_models, k_iterations):
     translator = TranslationAgent(lang, llm)
     evaluator = EvaluationAgent(lang, llm)
     refiner = RefinementAgent(lang, llm)
-    inputs = {"Source Sentence": input}
-    
+    final_outputs = []
 
     # each pipe: translate -> evaluate -> refine (iterate k times)
     threads_pipelines = []
     for _ in range(k_models):
-        threads_pipelines.append(threading.Thread(target = pipe1(translator, inputs, input, lang, final_output)))
+        threads_pipelines.append(threading.Thread(target = pipe1(translator, input, lang, final_outputs)))
 
     '''TODO: Add logic to get the final translation with the highest BLUE score'''
+    
+    final_output = get_best_output(final_outputs)
 
-def system_translation(lang, llm, input, k_models, k_iterations, nmt, final_output):
+    return final_output
+
+def system_translation(lang, llm, input, k_models, k_iterations, nmt):
     evaluator = EvaluationAgent(lang, llm)
     refiner = RefinementAgent(lang, llm)
     inputs = {"Source Sentence": input}
+    final_outputs = []
     if lang == 'portuguese':
         l = 'pt'
     elif lang == 'german':
         l = 'de'
 
     translation = ts.translate_text(input, translator=nmt, from_language=l, to_language='en')
-    
+    print(f"{nmt} initialy translated to {translation}")
+
     # each pipe: translate -> evaluate -> refine (iterate k times)
     threads_pipelines = []
     for _ in range(k_models):
-        thread = threading.Thread(target = pipe2(evaluator, translation, input, final_output))
+        thread = threading.Thread(target = pipe2(evaluator, translation, input, final_outputs))
         threads_pipelines.append(thread)
         thread.start()
 
@@ -61,10 +73,14 @@ def system_translation(lang, llm, input, k_models, k_iterations, nmt, final_outp
 
     '''TODO: Add logic to get the final translation with the highest BLUE score'''
 
+    final_output = get_best_output(final_outputs)
+
+    return final_output
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("language", help="Language that will be translated to English")
+    parser.add_argument("language", help="Language that will be translated to English (portuguese/english)")
     parser.add_argument("input", help="Sentence to be translated")
     parser.add_argument("model", help="Base LLM for agents")
     parser.add_argument("mode", help="Pipeline mode (llm/nmt)")
@@ -77,20 +93,20 @@ if __name__ == "__main__":
     )
     
     args = parser.parse_args()
-    lang = args.language
+    lang = args.language.lower()
     input = args.input
-    model = args.models 
+    model = args.model 
     mode = args.mode
     nmt = args.nmt_model
     k_models = args.k
     k = args.iterations
 
-    final_output = """"""
-
+    print()
+    print(f"Starting pipeline translation from {lang} to english")
     if mode == 'llm':
-        agent_translation(lang, model, input, k_models, k, final_output)
+        final_output = agent_translation(lang, model, input, k_models, k)
     else:
-        system_translation(lang, model, input, k_models, k, nmt, final_output)
+        final_output = system_translation(lang, model, input, k_models, k, nmt)
 
 
     print(f"""
@@ -98,7 +114,7 @@ if __name__ == "__main__":
     
     {lang.upper()} SOURCE : {input}
 
-    ENGLISH TRANSLATION: {final_output}
+    ENGLISH TRANSLATION: {final_output['translated_text']}
           
     ------------------------------------------------------------------------------------------------------------------------------------------------
     """)
