@@ -1,8 +1,9 @@
 
+from crewai import Crew
 
 
 
-class Crew:
+class RefinementCrew:
 
     def __init__(self) -> None:
         pass

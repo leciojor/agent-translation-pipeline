@@ -125,12 +125,22 @@ class EvaluationAgent:
 
 class RefinementAgent:
 
+    mqm_info = StringKnowledgeSource(
+        content="""
+            MQM (Multidimensional Quality Metrics) is a flexible framework for evaluating and annotating translation quality. 
+            It provides a detailed categorization of errors based on their type and severity, 
+            offering a structured way to identify and analyze issues in translations.
+        """,
+        metadata={}
+    )
+
     def __init__(self, llm, lang, verbose=True) -> None:
         if llm:
             self.agent  = Agent(
             role=f"Sentence Translation Refiner",
-            goal=f"Refine sentence translations from {lang} to english",
-            backstory=f"You refine sentence translations from {lang} to english",
+            goal=f"Refine sentence translations from {lang} to english based on MQM scorecard of the translation",
+            backstory=f"You refine sentence translations from {lang} to english based on MQM scorecard of the translation",
+            knowledge_sources = [RefinementAgent.mqm_info],
             llm=llm,
             verbose=verbose,
         )
@@ -142,3 +152,5 @@ class RefinementAgent:
             llm=llm,
             verbose=verbose,
         )
+
+
