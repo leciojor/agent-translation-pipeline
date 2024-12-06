@@ -157,7 +157,7 @@ class RefinementAgent:
         }
     )
 
-    def __init__(self, llm, lang, verbose=True) -> None:
+    def __init__(self, lang, llm, verbose=True) -> None:
         if llm:
             self.agent  = Agent(
             role=f"Sentence Translation Refiner",

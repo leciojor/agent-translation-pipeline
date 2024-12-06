@@ -14,22 +14,31 @@ from crewai import Crew
 def get_best_output(final_outputs):
     return final_outputs[0]
 
-def pipe1(translator, input, lang, final_outputs):
-    print("Executing")
+def pipe1(translator, input, lang, final_outputs, evaluator, refiner):
+    print("Executing pipe 1")
     translation = Translation(translator.agent, input, lang)
     crew = Crew(agents=[translator.agent], tasks=[translation.task])
     output = crew.kickoff()
-    translation_result = output.raw[7:-4]
-    result = pipe2()
-    final_outputs.append(result)
+    text = output.raw
 
-def pipe2(evaluator, translation, src, final_outputs):
-    # task = Evaluation(evaluator.agent, src, translation)
-    # inputs = {"Source Sentence": src, "Translation": translation}
-    # results = task.execute(inputs = inputs)
-    # return results
-    pass
-    '''TODO: add crew setup for pipe 2 '''
+    if text[0] == '`':
+        translation_result = text[7:-4]
+    else:
+        translation_result = text
+
+    translation_result = json.loads(translation_result)
+    pipe2(evaluator, refiner, lang, translation_result['translated_text'], translation_result['original_text'], final_outputs)
+    
+
+def pipe2(evaluator, refiner, lang, translation, src, final_outputs):
+    print("Executing pipe 2")
+    evaluation = Evaluation(evaluator.agent, lang, src, translation)
+    refinement = Refinement(refiner.agent, lang, src, translation)
+    crew = Crew(agents=[evaluator.agent, refiner.agent], tasks=[evaluation.task, refinement.task])
+    output = crew.kickoff()
+
+    final_outputs.append(output)
+    
 
 def agent_translation(lang, llm, input, k_models, k_iterations):
     translator = TranslationAgent(lang, llm)
@@ -40,7 +49,7 @@ def agent_translation(lang, llm, input, k_models, k_iterations):
     # each pipe: translate -> evaluate -> refine (iterate k times)
     threads_pipelines = []
     for _ in range(k_models):
-        threads_pipelines.append(threading.Thread(target = pipe1(translator, input, lang, final_outputs)))
+        threads_pipelines.append(threading.Thread(target = pipe1(translator, input, lang, final_outputs, evaluator, refiner)))
 
     '''TODO: Add logic to get the final translation with the highest BLUE score'''
     
@@ -51,7 +60,6 @@ def agent_translation(lang, llm, input, k_models, k_iterations):
 def system_translation(lang, llm, input, k_models, k_iterations, nmt):
     evaluator = EvaluationAgent(lang, llm)
     refiner = RefinementAgent(lang, llm)
-    inputs = {"Source Sentence": input}
     final_outputs = []
     if lang == 'portuguese':
         l = 'pt'
@@ -64,7 +72,7 @@ def system_translation(lang, llm, input, k_models, k_iterations, nmt):
     # each pipe: translate -> evaluate -> refine (iterate k times)
     threads_pipelines = []
     for _ in range(k_models):
-        thread = threading.Thread(target = pipe2(evaluator, translation, input, final_outputs))
+        thread = threading.Thread(target = pipe2(evaluator, refiner, lang, translation, input, final_outputs))
         threads_pipelines.append(thread)
         thread.start()
 
@@ -114,7 +122,7 @@ if __name__ == "__main__":
     
     {lang.upper()} SOURCE : {input}
 
-    ENGLISH TRANSLATION: {final_output['translated_text']}
+    ENGLISH TRANSLATION: {final_output}
           
     ------------------------------------------------------------------------------------------------------------------------------------------------
     """)
