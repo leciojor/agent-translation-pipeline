@@ -33,7 +33,7 @@ def pipe1(translator, input, lang, final_outputs, evaluator, refiner, k_iteratio
 def pipe2(evaluator, refiner, lang, translation, src, final_outputs, k_iterations):
     print("Executing pipe 2")
 
-    for _ in k_iterations:
+    for _ in range(k_iterations):
         evaluation = Evaluation(evaluator.agent, lang, src, translation)
         refinement = Refinement(refiner.agent, lang, src, translation)
         crew = Crew(agents=[evaluator.agent, refiner.agent], tasks=[evaluation.task, refinement.task])
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     
     {lang.upper()} SOURCE : {input}
 
-    ENGLISH TRANSLATION: {final_output['refined_translation']}
+    ENGLISH TRANSLATION: {translation['refined_translation']}
 
     MQM SCOREBOARD: 
 
