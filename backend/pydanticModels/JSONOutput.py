@@ -4,6 +4,13 @@ class TranslationOutput(BaseModel):
     original_text: str
     translated_text: str
 
+class BestTranslation(BaseModel):
+    best_translation_number: int
+
+class RefinementOutput(BaseModel):
+    original_translated_text: str
+    refined_translation: str
+
 class MQM(BaseModel):
     language_pair: str
     total_errors_identified: int

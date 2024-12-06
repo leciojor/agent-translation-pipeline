@@ -1,6 +1,6 @@
 
 from crewai import Task
-from pydanticModels.JSONOutput import TranslationOutput, MQM
+from pydanticModels.JSONOutput import TranslationOutput, MQM, RefinementOutput, BestTranslation
 
 
 class Translation:
@@ -48,5 +48,37 @@ class Refinement:
                         }
                         },
                         agent=agent,
-                        output_json=TranslationOutput
+                        output_json=RefinementOutput
+                        )
+        
+class GettingBestOutput:
+
+    def format_translations(translations, src):
+        txt = f"""Source Sentence: {src} \n"""
+        count = 1
+        for t in translations:
+            output = t[0]    
+            mqm = t[1]
+            txt += f"TRANSLATION number {count}: {output}\n"
+            txt += f"""MQM Scoreboard: 
+            {mqm}\n"""
+            txt += "\n"
+            count += 1
+
+        
+    def __init__(self, agent, lang, src, translations) -> None:
+        self.task = Task(description=f"""Get the best translation from {lang} to English between the following translations and their respectives mqm scorecards:
+                          
+                        {GettingBestOutput.format_translations(translations, src)}""",
+                        expected_output="JSON object with 'best_translation_number'",
+                        metadata={
+                                "output_format": {
+                                "type": "json",
+                                "fields": {
+                                        "best_translation_number": "int"
+                        }
+                        }
+                        },
+                        agent=agent,
+                        output_json=BestTranslation
                         )

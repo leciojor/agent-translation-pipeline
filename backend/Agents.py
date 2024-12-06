@@ -16,7 +16,7 @@ class TranslationAgent:
             backstory=f"You translate texts from {lang} to English",
             llm=LLM(
                 model=llm,
-                base_url=os.environ['OLLAMA_HOST'], temperature=0.1),
+                base_url=os.environ['OLLAMA_HOST'], temperature=0.1, context=os.environ['CONTEXT']),
             verbose=verbose,
         )
         else:
@@ -56,7 +56,7 @@ class EvaluationAgent:
             knowledge_sources = [EvaluationAgent.mqm_info, self.get_mqm_template()],
             llm=LLM(
                 model=llm,
-                base_url=os.environ['OLLAMA_HOST']),
+                base_url=os.environ['OLLAMA_HOST'], temperature=0.1, context=os.environ['CONTEXT']),
             verbose=verbose,
         )
         else:
@@ -64,9 +64,6 @@ class EvaluationAgent:
             role="Machine translation evaluator",
             goal=f"Evaluate a machine translated sentence from {lang} to english",
             backstory=f"You evaluates machine translated sentences from {lang} to english",
-            llm=LLM(
-                model=llm,
-                base_url=os.environ['OLLAMA_HOST']),
             verbose=verbose,
         )
             
@@ -163,7 +160,7 @@ class RefinementAgent:
             knowledge_sources = [RefinementAgent.mqm_info],
             llm=LLM(
                 model=llm,
-                base_url=os.environ['OLLAMA_HOST']),
+                base_url=os.environ['OLLAMA_HOST'], temperature=0.1, context=os.environ['CONTEXT']),
             verbose=verbose,
         )
         else:
@@ -171,10 +168,44 @@ class RefinementAgent:
             role=f"Sentence Translation Refiner",
             goal=f"Refine sentence translations from {lang} to english",
             backstory=f"You refine sentence translations from {lang} to english",
-            llm=LLM(
-                model=llm,
-                base_url=os.environ['OLLAMA_HOST']),
             verbose=verbose,
         )
+            
+class BestOutputAgent:
+
+    mqm_info = StringKnowledgeSource(
+        content="""
+            MQM (Multidimensional Quality Metrics) is a flexible framework for evaluating and annotating translation quality. 
+            It provides a detailed categorization of errors based on their type and severity, 
+            offering a structured way to identify and analyze issues in translations.
+        """,
+        metadata={
+            "domain": "translation_quality",
+            "framework": "MQM",
+            "source": "internal_documentation",
+        }
+    )
+
+    def __init__(self, lang, llm, verbose=True) -> None:
+        if llm:
+            self.agent  = Agent(
+            role=f"Best translation manager",
+            goal=f"Define what is the best translation between all the translations available from {lang} to english based on the MQM scoreboard of each",
+            backstory=f"You define what is the best translation between all the translations available from {lang} to english based on the MQM scoreboard of each",
+            knowledge_sources = [RefinementAgent.mqm_info],
+            llm=LLM(
+                model=llm,
+                base_url=os.environ['OLLAMA_HOST'], temperature=0.1, context=os.environ['CONTEXT']),
+            verbose=verbose,
+        )
+        else:
+            self.agent  = Agent(
+            role=f"Best translation manager",
+            goal=f"Define what is the best translation between all the translations available from {lang} to english based on the MQM scoreboard of each",
+            backstory=f"You define what is the best translation between all the translations available from {lang} to english based on the MQM scoreboard of each",
+            knowledge_sources = [RefinementAgent.mqm_info],
+            verbose=verbose,
+        )
+
 
 
