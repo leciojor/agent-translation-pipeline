@@ -23,7 +23,8 @@ class TranslationAgent:
             self.agent  = Agent(
             role=f"{lang} to English translator",
             goal=f"Translate sentences in {lang} to English",
-            backstory=f"You translate texts from {lang} to English",            verbose=verbose,
+            backstory=f"You translate texts from {lang} to English",            
+            verbose=verbose,
         )
 
         
@@ -79,47 +80,43 @@ class EvaluationAgent:
         Language Pair: [{self.lang} -> English]
         ==============================
 
-        Total Segments Evaluated: [Number]
         Total Errors Identified: [Number]
 
         ------------------------------
         Error Breakdown by Type
         ------------------------------
         1. Accuracy:
-        - Mistranslation: [check or not]
-        - Omission: [check or not]
-        - Addition: [check or not]
-        - Untranslated: [check or not]
+        - Mistranslation: [boolean]
+        - Omission: [boolean]
+        - Addition: [boolean]
+        - Untranslated: [boolean]
 
         2. Fluency:
-        - Grammar: [check or not]
-        - Punctuation: [check or not]
-        - Spelling: [check or not]
-        - Word Order: [check or not]
-        - Register: [check or not]
+        - Grammar: [boolean]
+        - Punctuation: [boolean]
+        - Spelling: [boolean]
+        - Word Order: [boolean]
+        - Register: [boolean]
 
         3. Terminology:
-        - Inconsistent: [check or not]
-        - Incorrect: [check or not]
+        - Inconsistent: [boolean]
+        - Incorrect: [boolean]
 
         4. Locale/Style:
-        - Style: [check or not]
-        - Locale Conventions: [check or not]
+        - Style: [boolean]
+        - Locale Conventions: [boolean]
 
         5. Formatting:
-        - Tag Issues: [check or not]
-        - Layout: [check or not]
+        - Tag Issues: [boolean]
+        - Layout: [boolean]
 
         6. Other:
-        - Non-linguistic Issues: [check or not]
+        - Non-linguistic Issues: [boolean]
 
         ------------------------------
-        Error Breakdown by Severity
+        Error Classification
         ------------------------------
-        1. Neutral: [check or not]
-        2. Minor: [check or not]
-        3. Major: [check or not]
-        4. Critical: [check or not]
+        [Neutral or Minor or Major or Critical]
 
         ------------------------------
         Summary & Comments

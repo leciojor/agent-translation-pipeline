@@ -2,13 +2,13 @@
 Crew call logic
 '''
 import json
-
 from argparse import ArgumentParser
 from Agents import TranslationAgent, EvaluationAgent, RefinementAgent
 from Tasks import Translation, Evaluation, Refinement
 import translators as ts
 import threading
 from crewai import Crew
+import re
 
 
 def get_best_output(final_outputs):
@@ -19,14 +19,8 @@ def pipe1(translator, input, lang, final_outputs, evaluator, refiner):
     translation = Translation(translator.agent, input, lang)
     crew = Crew(agents=[translator.agent], tasks=[translation.task])
     output = crew.kickoff()
-    text = output.raw
+    translation_result = json.loads(output.json)
 
-    if text[0] == '`':
-        translation_result = text[7:-4]
-    else:
-        translation_result = text
-
-    translation_result = json.loads(translation_result)
     pipe2(evaluator, refiner, lang, translation_result['translated_text'], translation_result['original_text'], final_outputs)
     
 
@@ -37,7 +31,7 @@ def pipe2(evaluator, refiner, lang, translation, src, final_outputs):
     crew = Crew(agents=[evaluator.agent, refiner.agent], tasks=[evaluation.task, refinement.task])
     output = crew.kickoff()
 
-    final_outputs.append(output)
+    final_outputs.append(json.loads(output.json))
     
 
 def agent_translation(lang, llm, input, k_models, k_iterations):
@@ -122,7 +116,7 @@ if __name__ == "__main__":
     
     {lang.upper()} SOURCE : {input}
 
-    ENGLISH TRANSLATION: {final_output}
+    ENGLISH TRANSLATION: {final_output['refined_translation']}
           
     ------------------------------------------------------------------------------------------------------------------------------------------------
     """)
