@@ -8,13 +8,14 @@ from Tasks import Translation, Evaluation, Refinement, GettingBestOutput
 import translators as ts
 import threading
 from crewai import Crew
+from knowledgeModels.MQM import MQMKnowledge
 
 
 def get_best_output(final_outputs, lang, llm, src):
     print('Getting Best Output')
     agent = BestOutputAgent(lang, llm).agent
     task = GettingBestOutput(agent, lang, src, final_outputs).task
-    crew = Crew(agents=[agent], tasks=[task])
+    crew = Crew(agents=[agent], tasks=[task], knowledge_sources=[MQMKnowledge.mqm_info, MQMKnowledge.mqm_template])
     output = crew.kickoff()
     final_result = json.loads(output.json)
 
@@ -23,7 +24,7 @@ def get_best_output(final_outputs, lang, llm, src):
 def pipe1(translator, input, lang, final_outputs, evaluator, refiner, k_iterations):
     print("Executing pipe 1")
     translation = Translation(translator.agent, input, lang)
-    crew = Crew(agents=[translator.agent], tasks=[translation.task])
+    crew = Crew(agents=[translator.agent], tasks=[translation.task], knowledge_sources=[MQMKnowledge.mqm_info, MQMKnowledge.mqm_template])
     output = crew.kickoff()
     translation_result = json.loads(output.json)
 
@@ -36,7 +37,7 @@ def pipe2(evaluator, refiner, lang, translation, src, final_outputs, k_iteration
     for _ in range(k_iterations):
         evaluation = Evaluation(evaluator.agent, lang, src, translation)
         refinement = Refinement(refiner.agent, lang, src, translation)
-        crew = Crew(agents=[evaluator.agent, refiner.agent], tasks=[evaluation.task, refinement.task])
+        crew = Crew(agents=[evaluator.agent, refiner.agent], tasks=[evaluation.task, refinement.task], knowledge_sources=[MQMKnowledge.mqm_info, MQMKnowledge.mqm_template])
         output = crew.kickoff()
         tasks_outputs = output.tasks_output
         mqm_scoreboard = tasks_outputs[0].json
@@ -57,7 +58,6 @@ def agent_translation(lang, llm, input, k_models, k_iterations):
     for _ in range(k_models):
         threads_pipelines.append(threading.Thread(target = pipe1(translator, input, lang, final_outputs, evaluator, refiner, k_iterations)))
 
-    
     final_output = get_best_output(final_outputs, lang, llm, input)
 
     return final_output
@@ -114,11 +114,12 @@ if __name__ == "__main__":
 
     print()
     print(f"Starting pipeline translation from {lang} to english")
+    print(MQMKnowledge.mqm_template)
     if mode == 'llm':
         final_output = agent_translation(lang, model, input, k_models, k)
     else:
         final_output = system_translation(lang, model, input, k_models, k, nmt)
-
+    
     translation = final_output[0]
     mqm_scoreboard = final_output[1]
 

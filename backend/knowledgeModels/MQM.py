@@ -1,9 +1,12 @@
 
 from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+from dotenv import load_dotenv
 
+load_dotenv()
 
 
 class MQMKnowledge:
+    
     mqm_info = StringKnowledgeSource(
         content="""
             MQM (Multidimensional Quality Metrics) is a flexible framework for evaluating and annotating translation quality. 
@@ -13,28 +16,20 @@ class MQMKnowledge:
         metadata={
             "domain": "translation_quality",
             "framework": "MQM",
-            "source": "internal_documentation",
+            "source": "internal_documentation"
         }
     )
-    
-    def __init__(self, lang):
-        self.lang = lang
 
-
-    def get_mqm_template(self):
-        mqm_template = StringKnowledgeSource(
+    mqm_template = StringKnowledgeSource(
         content=f"""
         ==============================
                 MQM Scoreboard
         ==============================
 
-        Language Pair: [{self.lang} -> English]
-        ==============================
-
         Total Errors Identified: [Number]
 
         ------------------------------
-        Error Breakdown by Type
+        Error Breakdown by Type (True if there is an error of that aspect)
         ------------------------------
         1. Accuracy:
         - Mistranslation: [boolean]
@@ -61,9 +56,6 @@ class MQMKnowledge:
         - Tag Issues: [boolean]
         - Layout: [boolean]
 
-        6. Other:
-        - Non-linguistic Issues: [boolean]
-
         ------------------------------
         Error Classification
         ------------------------------
@@ -85,4 +77,9 @@ class MQMKnowledge:
             "source": "internal_documentation"
         }
     )
-        return mqm_template
+
+    
+    def __init__(self, lang):
+        self.lang = lang
+
+
