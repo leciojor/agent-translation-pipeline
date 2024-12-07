@@ -13,10 +13,25 @@ def exec_pipe(lang, input, model, mode, parallel_executions, k_iterations, nmt):
     else:
         final_output = system_translation(lang, model, input, parallel_executions, k_iterations, nmt)
 
+    translation = final_output[0]
+    mqm_scoreboard = final_output[1]
+
     state['status'] = st.success("Agent pipeline finished the translation process")
 
     if st.button("Restart"):
-        st.text()
+        st.text(f"""
+    ------------------------------------------------------------------------------------------------------------------------------------------------
+    
+    {lang.upper()} SOURCE : {input}
+
+    ENGLISH TRANSLATION: {translation['refined_translation']}
+
+    MQM SCOREBOARD: 
+
+    {mqm_scoreboard}
+          
+    ------------------------------------------------------------------------------------------------------------------------------------------------
+    """)
 
 
 def main():
