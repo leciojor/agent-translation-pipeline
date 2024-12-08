@@ -7,31 +7,48 @@ import streamlit as st
 from streamlit import session_state as state
 from backend.__main__ import agent_translation, system_translation
 
+def restart():
+    state['status'] = st.success("Fill the pipeline configurations and click START")
+
+    state['lang'] = ""
+    state['input'] = ""
+    state['model'] = ""
+    state['mode'] = ""
+    state['executions'] = None
+    state['k'] = None
+    state['nmt'] = ""
+
 def exec_pipe(lang, input, model, mode, parallel_executions, k_iterations, nmt):
     if mode == 'llm':
         final_output = agent_translation(lang, model, input, parallel_executions, k_iterations)
     else:
         final_output = system_translation(lang, model, input, parallel_executions, k_iterations, nmt)
 
-    translation = final_output[0]
-    mqm_scoreboard = final_output[1]
+    initial = final_output[0]
+    translation = final_output[1]
+    mqm_scoreboard = final_output[2]
 
     state['status'] = st.success("Agent pipeline finished the translation process")
 
-    if st.button("Restart"):
-        st.text(f"""
+    st.text(f"""
     ------------------------------------------------------------------------------------------------------------------------------------------------
     
     {lang.upper()} SOURCE : {input}
 
-    ENGLISH TRANSLATION: {translation['refined_translation']}
+    INITIAL ENGLISH TRANSLATION: {initial}
+
+    FINAL ENGLISH TRANSLATION: {translation['refined_translation']}
 
     MQM SCOREBOARD: 
 
     {mqm_scoreboard}
-          
+        
     ------------------------------------------------------------------------------------------------------------------------------------------------
     """)
+
+    if st.button("Restart"):
+        restart()
+
 
 
 def main():
@@ -59,25 +76,36 @@ def main():
     if 'nmt' not in state:
         state['nmt'] = ""
     
-    if state['mode'] == 'nmt':
-        state['nmt'] = st.selectbox("Machine Translation System", ["yandex", "bing", "alibaba"])
+    
 
     state['lang'] = st.selectbox("Source Language", ["portuguese", "english"])
     state['input'] = st.text_input("TRANSLATE: ")
+    state['model'] = st.selectbox("BASE LLM", ["ollama/wizardlm2", "ollama/llama2", "Gpt4o-mini"])
+    state['mode'] = st.selectbox("Pipeline mode", ["llm", "nmt"])
+    state['executions'] = st.number_input("Enter the amount of parallel executions")
+    state['k'] = st.number_input("Enter the amount of refinement iterations for each paralel execution")
+
+    if state['mode'] == 'nmt':
+        state['nmt'] = st.selectbox("Machine Translation System", ["yandex", "bing", "alibaba"])
 
     if st.button("START PIPELINE EXECUTION"):
         if state['mode'] == 'nmt' and not state['nmt']:
-            state['status'] = st.error("You cannot use the ")
+            state['status'] = st.error("You cannot use the NMT mode without specifing the system you would like to use")
+            st.rerun()
         elif state['lang'] and state['input'] and state['model'] and state['mode'] and state['k'] and state['done']:
             state['status'] = st.error("RUNNING PIPELINE EXECUTION")
             st.spinner(text="In progress...")
             try:
-                exec_pipe(state['lang'], state['input'], state['model'], state['mode'], state['executions'], state['k'], state['nmt'])
+                if state['model']:
+                    exec_pipe(state['lang'], state['input'], state['model'], state['mode'], state['executions'], state['k'], state['nmt'])
+                else:
+                    exec_pipe(state['lang'], state['input'], "", state['mode'], state['executions'], state['k'], state['nmt'])
             except Exception as e:
                 state['status'] = st.error(state['status'])
 
         else:
             state['status'] = st.error("Please fill all configurations before execution")
+            st.rerun()
 
 
 

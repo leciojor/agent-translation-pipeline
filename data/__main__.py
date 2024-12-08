@@ -17,7 +17,7 @@ def get_tmx_files_text(directory, limit=False):
                     tmx_texts.append(text)
     return tmx_texts
 
-def forming_txt_files(texts, lang, en_name='src', other='tgt'):
+def forming_txt_files(texts, lang, en_name='tgt', other='src'):
     
     for pair in tqdm(texts, desc="Writing cleaned txt to text files", unit="pair"):
         eng = pair[0]
@@ -28,7 +28,7 @@ def forming_txt_files(texts, lang, en_name='src', other='tgt'):
         with open(f"./data/cleaned/Lecio-{lang}-{other}.txt", 'a') as f:
             f.write(ot + '\n')
 
-def main(folder = 'portuguese', new=False, en_name='src', other='tgt'):
+def main(folder = 'portuguese', new=False, en_name='tgt', other='src'):
     tmx_texts = get_tmx_files_text(folder, limit=True)
     final_pairs_amount = 0
     os.makedirs("./data/cleaned", exist_ok=True)
