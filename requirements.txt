@@ -1,1 +1,12 @@
 crewai
+json
+argparse
+threading
+translators
+python-dotenv
+pydantic
+subprocess
+tqdm
+regex
+html
+streamlit
