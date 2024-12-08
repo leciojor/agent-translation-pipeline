@@ -56,7 +56,12 @@ def agent_translation(lang, llm, input, k_models, k_iterations):
     # each pipe: translate -> evaluate -> refine (iterate k times)
     threads_pipelines = []
     for _ in range(k_models):
-        threads_pipelines.append(threading.Thread(target = pipe1(translator, input, lang, final_outputs, evaluator, refiner, k_iterations)))
+        thread = threading.Thread(target = pipe1, args = (translator, input, lang, final_outputs, evaluator, refiner, k_iterations))
+        threads_pipelines.append(thread)
+        thread.start()
+    
+    for thread in threads_pipelines:
+        thread.join()
 
     final_output = get_best_output(final_outputs, lang, llm, input)
 
@@ -77,7 +82,7 @@ def system_translation(lang, llm, input, k_models, k_iterations, nmt):
     # each pipe: translate -> evaluate -> refine (iterate k times)
     threads_pipelines = []
     for _ in range(k_models):
-        thread = threading.Thread(target = pipe2(evaluator, refiner, lang, translation, input, final_outputs, k_iterations))
+        thread = threading.Thread(target = pipe2, args=(evaluator, refiner, lang, translation, input, final_outputs, k_iterations))
         threads_pipelines.append(thread)
         thread.start()
 
@@ -114,7 +119,6 @@ if __name__ == "__main__":
 
     print()
     print(f"Starting pipeline translation from {lang} to english")
-    print(MQMKnowledge.mqm_template)
     if mode == 'llm':
         final_output = agent_translation(lang, model, input, k_models, k)
     else:
