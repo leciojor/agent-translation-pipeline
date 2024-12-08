@@ -1,3 +1,8 @@
+'''
+Agents definition logic
+'''
+
+
 from crewai import Agent, LLM
 
 import os

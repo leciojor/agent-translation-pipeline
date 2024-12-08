@@ -27,7 +27,7 @@ streamlit run frontend.py
 python -m backend <source-language (portuguese/german)> <input-to-translate-to-english> <llm-base-model *leave it with empty string if the desired model it gpt4o-mini> <pipeline mode (nmt/llm)>  <amount-of-paralel-executions (integer)>  <amout-of-refinement-operations (integer)> <nmt-system (just for nmt mode)>
 ```
 
+*The whole code in /backend is documented in case you would like to see how the main logic works (pipeline architecture, agents/tasks/crews definitions, etc)
 *I strongly recommend using the streamlit frontend
-
 
 

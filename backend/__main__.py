@@ -12,6 +12,10 @@ from backend.knowledgeModels.MQM import MQMKnowledge
 
 
 def get_best_output(final_outputs, lang, llm, src, verbose):
+    '''
+    Crew logic for agent that decides which of the final outputs from its respective paralel execution is the best based on MQM standards
+    '''
+
     if verbose:
         print('Getting Best Output')
     agent = BestOutputAgent(lang, llm, verbose).agent
@@ -23,6 +27,10 @@ def get_best_output(final_outputs, lang, llm, src, verbose):
     return final_outputs[final_result['best_translation_number']-1]
 
 def pipe1(translator, input, lang, final_outputs, evaluator, refiner, k_iterations, verbose):
+    '''
+    Takes care of the llm translation part of the pipeline
+    '''
+
     if verbose:
         print("Executing pipe 1")
     translation = Translation(translator.agent, input, lang)
@@ -34,6 +42,10 @@ def pipe1(translator, input, lang, final_outputs, evaluator, refiner, k_iteratio
     
 
 def pipe2(evaluator, refiner, lang, translation, src, final_outputs, k_iterations, verbose):
+    '''
+    Takes care of the refinement part of the pipeline
+    '''
+    
     if verbose:
         print("Executing pipe 2")
 
@@ -52,6 +64,9 @@ def pipe2(evaluator, refiner, lang, translation, src, final_outputs, k_iteration
     
 
 def agent_translation(lang, llm, input, k_models, k_iterations, verbose=True):
+    '''
+    Crew and Pipeline logic for llm mode (initial translation is done by the same llm base model of the other agents)
+    '''
     translator = TranslationAgent(lang, llm, verbose)
     evaluator = EvaluationAgent(lang, llm, verbose)
     refiner = RefinementAgent(lang, llm, verbose)
@@ -72,6 +87,9 @@ def agent_translation(lang, llm, input, k_models, k_iterations, verbose=True):
     return final_output
 
 def system_translation(lang, llm, input, k_models, k_iterations, nmt, verbose=True):
+    '''
+    Crew and Pipeline logic for nmt mode (initial translation is done by common NMT system like yandex, bing, ...)
+    '''
     evaluator = EvaluationAgent(lang, llm, verbose)
     refiner = RefinementAgent(lang, llm, verbose)
     final_outputs = []
@@ -79,7 +97,8 @@ def system_translation(lang, llm, input, k_models, k_iterations, nmt, verbose=Tr
         l = 'pt'
     elif lang == 'german':
         l = 'de'
-
+    
+    # logic to get the translation from the desired nmt system
     translation = ts.translate_text(input, translator=nmt, from_language=l, to_language='en')
     if verbose:
         print(f"{nmt} initialy translated to {translation}")
@@ -100,6 +119,8 @@ def system_translation(lang, llm, input, k_models, k_iterations, nmt, verbose=Tr
 
 
 if __name__ == "__main__":
+    '''Command line execution logic'''
+
     parser = ArgumentParser()
     parser.add_argument("language", help="Language that will be translated to English (portuguese/english)")
     parser.add_argument("input", help="Sentence to be translated")
