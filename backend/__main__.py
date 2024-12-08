@@ -3,17 +3,18 @@ Crew call logic
 '''
 import json
 from argparse import ArgumentParser
-from Agents import TranslationAgent, EvaluationAgent, RefinementAgent, BestOutputAgent
-from Tasks import Translation, Evaluation, Refinement, GettingBestOutput
+from backend.Agents import TranslationAgent, EvaluationAgent, RefinementAgent, BestOutputAgent
+from backend.Tasks import Translation, Evaluation, Refinement, GettingBestOutput
 import translators as ts
 import threading
 from crewai import Crew
-from knowledgeModels.MQM import MQMKnowledge
+from backend.knowledgeModels.MQM import MQMKnowledge
 
 
-def get_best_output(final_outputs, lang, llm, src):
-    print('Getting Best Output')
-    agent = BestOutputAgent(lang, llm).agent
+def get_best_output(final_outputs, lang, llm, src, verbose):
+    if verbose:
+        print('Getting Best Output')
+    agent = BestOutputAgent(lang, llm, verbose).agent
     task = GettingBestOutput(agent, lang, src, final_outputs).task
     crew = Crew(agents=[agent], tasks=[task], knowledge_sources=[MQMKnowledge.mqm_info, MQMKnowledge.mqm_template])
     output = crew.kickoff()
@@ -21,19 +22,22 @@ def get_best_output(final_outputs, lang, llm, src):
 
     return final_outputs[final_result['best_translation_number']-1]
 
-def pipe1(translator, input, lang, final_outputs, evaluator, refiner, k_iterations):
-    print("Executing pipe 1")
+def pipe1(translator, input, lang, final_outputs, evaluator, refiner, k_iterations, verbose):
+    if verbose:
+        print("Executing pipe 1")
     translation = Translation(translator.agent, input, lang)
     crew = Crew(agents=[translator.agent], tasks=[translation.task], knowledge_sources=[MQMKnowledge.mqm_info, MQMKnowledge.mqm_template])
     output = crew.kickoff()
     translation_result = json.loads(output.json)
 
-    pipe2(evaluator, refiner, lang, translation_result['translated_text'], translation_result['original_text'], final_outputs, k_iterations)
+    pipe2(evaluator, refiner, lang, translation_result['translated_text'], translation_result['original_text'], final_outputs, k_iterations, verbose)
     
 
-def pipe2(evaluator, refiner, lang, translation, src, final_outputs, k_iterations):
-    print("Executing pipe 2")
+def pipe2(evaluator, refiner, lang, translation, src, final_outputs, k_iterations, verbose):
+    if verbose:
+        print("Executing pipe 2")
 
+    original = translation
     for _ in range(k_iterations):
         evaluation = Evaluation(evaluator.agent, lang, src, translation)
         refinement = Refinement(refiner.agent, lang, src, translation)
@@ -44,32 +48,32 @@ def pipe2(evaluator, refiner, lang, translation, src, final_outputs, k_iteration
         output = json.loads(output.json)
         translation = output['refined_translation']
 
-    final_outputs.append((output, mqm_scoreboard))
+    final_outputs.append((original, output, mqm_scoreboard))
     
 
-def agent_translation(lang, llm, input, k_models, k_iterations):
-    translator = TranslationAgent(lang, llm)
-    evaluator = EvaluationAgent(lang, llm)
-    refiner = RefinementAgent(lang, llm)
+def agent_translation(lang, llm, input, k_models, k_iterations, verbose=True):
+    translator = TranslationAgent(lang, llm, verbose)
+    evaluator = EvaluationAgent(lang, llm, verbose)
+    refiner = RefinementAgent(lang, llm, verbose)
     final_outputs = []
 
     # each pipe: translate -> evaluate -> refine (iterate k times)
     threads_pipelines = []
     for _ in range(k_models):
-        thread = threading.Thread(target = pipe1, args = (translator, input, lang, final_outputs, evaluator, refiner, k_iterations))
+        thread = threading.Thread(target = pipe1, args = (translator, input, lang, final_outputs, evaluator, refiner, k_iterations, verbose))
         threads_pipelines.append(thread)
         thread.start()
     
     for thread in threads_pipelines:
         thread.join()
 
-    final_output = get_best_output(final_outputs, lang, llm, input)
+    final_output = get_best_output(final_outputs, lang, llm, input, verbose)
 
     return final_output
 
-def system_translation(lang, llm, input, k_models, k_iterations, nmt):
-    evaluator = EvaluationAgent(lang, llm)
-    refiner = RefinementAgent(lang, llm)
+def system_translation(lang, llm, input, k_models, k_iterations, nmt, verbose=True):
+    evaluator = EvaluationAgent(lang, llm, verbose)
+    refiner = RefinementAgent(lang, llm, verbose)
     final_outputs = []
     if lang == 'portuguese':
         l = 'pt'
@@ -77,19 +81,20 @@ def system_translation(lang, llm, input, k_models, k_iterations, nmt):
         l = 'de'
 
     translation = ts.translate_text(input, translator=nmt, from_language=l, to_language='en')
-    print(f"{nmt} initialy translated to {translation}")
+    if verbose:
+        print(f"{nmt} initialy translated to {translation}")
 
     # each pipe: translate -> evaluate -> refine (iterate k times)
     threads_pipelines = []
     for _ in range(k_models):
-        thread = threading.Thread(target = pipe2, args=(evaluator, refiner, lang, translation, input, final_outputs, k_iterations))
+        thread = threading.Thread(target = pipe2, args=(evaluator, refiner, lang, translation, input, final_outputs, k_iterations, verbose))
         threads_pipelines.append(thread)
         thread.start()
 
     for thread in threads_pipelines:
         thread.join()
 
-    final_output = get_best_output(final_outputs, lang, llm, input)
+    final_output = get_best_output(final_outputs, lang, llm, input, verbose)
 
     return final_output
 
@@ -124,15 +129,18 @@ if __name__ == "__main__":
     else:
         final_output = system_translation(lang, model, input, k_models, k, nmt)
     
-    translation = final_output[0]
-    mqm_scoreboard = final_output[1]
+    initial = final_output[0]
+    translation = final_output[1]
+    mqm_scoreboard = final_output[2]
 
     print(f"""
     ------------------------------------------------------------------------------------------------------------------------------------------------
     
     {lang.upper()} SOURCE : {input}
 
-    ENGLISH TRANSLATION: {translation['refined_translation']}
+    INITIAL ENGLISH TRANSLATION: {initial}
+
+    FINAL ENGLISH TRANSLATION: {translation['refined_translation']}
 
     MQM SCOREBOARD: 
 

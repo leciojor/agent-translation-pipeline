@@ -1,6 +1,6 @@
 
 from crewai import Task
-from pydanticModels.JSONOutput import TranslationOutput, MQM, RefinementOutput, BestTranslation
+from backend.pydanticModels.JSONOutput import TranslationOutput, MQM, RefinementOutput, BestTranslation
 
 
 class Translation:
@@ -71,8 +71,8 @@ class GettingBestOutput:
         txt = f"""Source Sentence: {src} \n"""
         count = 1
         for t in translations:
-            output = t[0]    
-            mqm = t[1]
+            output = t[1]    
+            mqm = t[2]
             txt += f"TRANSLATION number {count}: {output}\n"
             txt += f"""MQM Scoreboard: 
             {mqm}\n"""
