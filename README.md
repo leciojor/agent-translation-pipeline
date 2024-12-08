@@ -28,6 +28,7 @@ python -m backend <source-language (portuguese/german)> <input-to-translate-to-e
 ```
 
 *The whole code in /backend is documented in case you would like to see how the main logic works (pipeline architecture, agents/tasks/crews definitions, etc)
-*I strongly recommend using the streamlit frontend
+
+*I strongly recommend using the streamlit frontend for executing the logic
 
 
