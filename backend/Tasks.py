@@ -1,3 +1,7 @@
+'''
+Tasks definition logic
+'''
+
 
 from crewai import Task
 from backend.pydanticModels.JSONOutput import TranslationOutput, MQM, RefinementOutput, BestTranslation

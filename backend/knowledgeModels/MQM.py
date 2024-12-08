@@ -1,3 +1,7 @@
+'''
+Logic to embedded string information that is fed to the models/agents so they retrieve
+it when requested or use it for taking "actions"
+'''
 
 from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
 from dotenv import load_dotenv

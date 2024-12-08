@@ -1,3 +1,8 @@
+'''
+Pydantic logic to define the agents output structure
+'''
+
+
 from pydantic import BaseModel
 
 class TranslationOutput(BaseModel):
