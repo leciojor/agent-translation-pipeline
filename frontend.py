@@ -62,8 +62,7 @@ def exec_pipe(lang, input, model, mode, parallel_executions, k_iterations, nmt):
 
 def main():
     st.title("Portuguese/German to English LLM Translation Pipeline")
-    st.text('ADD READ ME')
-
+    
     st.success("Fill the pipeline configurations and click START")
 
 
