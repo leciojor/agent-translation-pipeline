@@ -7,9 +7,10 @@ import streamlit as st
 from streamlit import session_state as state
 from backend.__main__ import agent_translation, system_translation
 
-def restart():
-    state['status'] = ("Fill the pipeline configurations and click START", "success")
+def format_mqm(mqm):
+    pass
 
+def restart():
     state['lang'] = ""
     state['input'] = ""
     state['model'] = ""
@@ -28,7 +29,6 @@ def exec_pipe(lang, input, model, mode, parallel_executions, k_iterations, nmt):
     translation = final_output[1]
     mqm_scoreboard = final_output[2]
 
-    state['status'] = ("Agent pipeline finished the translation process", "success")
 
     st.text(f"""
     ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -39,9 +39,9 @@ def exec_pipe(lang, input, model, mode, parallel_executions, k_iterations, nmt):
 
     FINAL ENGLISH TRANSLATION: {translation['refined_translation']}
 
-    MQM SCOREBOARD: 
+    MQM SCOREBOARD FROM FINAL ENGLISH TRANSLATION: 
 
-    {mqm_scoreboard}
+    {format_mqm(mqm_scoreboard)}
         
     ------------------------------------------------------------------------------------------------------------------------------------------------
     """)
@@ -55,16 +55,8 @@ def main():
     st.title("Portuguese/German to English LLM Translation Pipeline")
     st.text('ADD READ ME')
 
-    if "status" not in state:
-        state['status'] = ("Fill the pipeline configurations and click START", 'success')
+    st.success("Fill the pipeline configurations and click START")
 
-    with st.empty():
-        if state['status'][1] == 'success':
-            st.success(state['status'][0])
-        elif state['status'][1] == 'warning':
-            st.warning(state['status'][0])
-        elif state['status'][1] == 'error':
-            st.error(state['status'][0])
 
     if 'lang' not in state:
         state['lang'] = ""
@@ -95,10 +87,10 @@ def main():
 
     if st.button("START PIPELINE EXECUTION"):
         if state['mode'] == 'nmt' and not state['nmt']:
-            state['status'] = ("You cannot use the NMT mode without specifing the system you would like to use", "error")
+            st.error("You cannot use the NMT mode without specifing the system you would like to use", "error")
             st.rerun()
         elif state['lang'] and state['input'] and state['model'] and state['mode'] and state['k']:
-            state['status'] = ("RUNNING PIPELINE EXECUTION", "warning")
+            st.warning("RUNNING PIPELINE EXECUTION")
             st.spinner(text="In progress...")
             try:
                 if state['model'] == "Gpt4o-mini":
@@ -106,10 +98,10 @@ def main():
                 else:
                     exec_pipe(state['lang'], state['input'], state["model"], state['mode'], state['executions'], state['k'], state['nmt'])
             except Exception as e:
-                state['status'] = (state['status'], "error")
+                st.error(e)
 
         else:
-            state['status'] = ("Please fill all configurations before execution", "error")
+            st.error("Please fill all configurations before execution")
             st.rerun()
 
 
