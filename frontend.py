@@ -2,13 +2,22 @@
 Streamlit frontend logic
 '''
 
+import json
 from backend.__main__ import agent_translation, system_translation
 import streamlit as st
 from streamlit import session_state as state
 from backend.__main__ import agent_translation, system_translation
 
+def format_output(str):
+    return '\n'.join(str[i:i+55] for i in range(0, len(str), 55))
+
 def format_mqm(mqm):
-    pass
+    mqm = json.loads(mqm)
+    final_txt = """"""
+    for key in mqm:
+        final_txt += f"{key.upper()}: {format_output(str(mqm[key]))} \n"
+
+    return final_txt
 
 def restart():
     state['lang'] = ""
@@ -33,11 +42,11 @@ def exec_pipe(lang, input, model, mode, parallel_executions, k_iterations, nmt):
     st.text(f"""
     ------------------------------------------------------------------------------------------------------------------------------------------------
     
-    {lang.upper()} SOURCE : {input}
+    {lang.upper()} SOURCE : {format_output(input)}
 
-    INITIAL ENGLISH TRANSLATION: {initial}
+    INITIAL ENGLISH TRANSLATION: {format_output(initial)}
 
-    FINAL ENGLISH TRANSLATION: {translation['refined_translation']}
+    FINAL ENGLISH TRANSLATION: {format_output(translation['refined_translation'])}
 
     MQM SCOREBOARD FROM FINAL ENGLISH TRANSLATION: 
 
@@ -90,15 +99,15 @@ def main():
             st.error("You cannot use the NMT mode without specifing the system you would like to use", "error")
             st.rerun()
         elif state['lang'] and state['input'] and state['model'] and state['mode'] and state['k']:
-            st.warning("RUNNING PIPELINE EXECUTION")
-            st.spinner(text="In progress...")
-            try:
-                if state['model'] == "Gpt4o-mini":
-                    exec_pipe(state['lang'], state['input'], "", state['mode'], state['executions'], state['k'], state['nmt'])
-                else:
-                    exec_pipe(state['lang'], state['input'], state["model"], state['mode'], state['executions'], state['k'], state['nmt'])
-            except Exception as e:
-                st.error(e)
+            with st.spinner(text="In progress..."):    
+                st.warning("PIPELINE IS RUNNING...")
+                try:
+                    if state['model'] == "Gpt4o-mini":
+                        exec_pipe(state['lang'], state['input'], "", state['mode'], state['executions'], state['k'], state['nmt'])
+                    else:
+                        exec_pipe(state['lang'], state['input'], state["model"], state['mode'], state['executions'], state['k'], state['nmt'])
+                except Exception as e:
+                    st.error(e)
 
         else:
             st.error("Please fill all configurations before execution")
