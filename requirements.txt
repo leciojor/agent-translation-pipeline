@@ -1,5 +1,4 @@
 crewai
-json
 argparse
 threading
 translators
