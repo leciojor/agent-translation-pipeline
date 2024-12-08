@@ -8,7 +8,7 @@ from streamlit import session_state as state
 from backend.__main__ import agent_translation, system_translation
 
 def restart():
-    state['status'] = st.success("Fill the pipeline configurations and click START")
+    state['status'] = ("Fill the pipeline configurations and click START", "success")
 
     state['lang'] = ""
     state['input'] = ""
@@ -28,7 +28,7 @@ def exec_pipe(lang, input, model, mode, parallel_executions, k_iterations, nmt):
     translation = final_output[1]
     mqm_scoreboard = final_output[2]
 
-    state['status'] = st.success("Agent pipeline finished the translation process")
+    state['status'] = ("Agent pipeline finished the translation process", "success")
 
     st.text(f"""
     ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -52,14 +52,19 @@ def exec_pipe(lang, input, model, mode, parallel_executions, k_iterations, nmt):
 
 
 def main():
-    st.title("English to Portuguese/German LLM Translation Pipeline")
+    st.title("Portuguese/German to English LLM Translation Pipeline")
     st.text('ADD READ ME')
 
     if "status" not in state:
-        state['status'] = st.success("Fill the pipeline configurations and click START")
+        state['status'] = ("Fill the pipeline configurations and click START", 'success')
 
     with st.empty():
-        state['status']
+        if state['status'][1] == 'success':
+            st.success(state['status'][0])
+        elif state['status'][1] == 'warning':
+            st.warning(state['status'][0])
+        elif state['status'][1] == 'error':
+            st.error(state['status'][0])
 
     if 'lang' not in state:
         state['lang'] = ""
@@ -78,33 +83,33 @@ def main():
     
     
 
-    state['lang'] = st.selectbox("Source Language", ["portuguese", "english"])
-    state['input'] = st.text_input("TRANSLATE: ")
+    state['lang'] = st.selectbox("Source Language", ["portuguese", "german"])
+    state['input'] = st.text_input("INPUT: ")
     state['model'] = st.selectbox("BASE LLM", ["ollama/wizardlm2", "ollama/llama2", "Gpt4o-mini"])
     state['mode'] = st.selectbox("Pipeline mode", ["llm", "nmt"])
-    state['executions'] = st.number_input("Enter the amount of parallel executions")
-    state['k'] = st.number_input("Enter the amount of refinement iterations for each paralel execution")
+    state['executions'] = st.number_input("Enter the amount of parallel executions", value=1, format="%d")
+    state['k'] = st.number_input("Enter the amount of refinement iterations for each paralel execution", value=1, format="%d")
 
     if state['mode'] == 'nmt':
         state['nmt'] = st.selectbox("Machine Translation System", ["yandex", "bing", "alibaba"])
 
     if st.button("START PIPELINE EXECUTION"):
         if state['mode'] == 'nmt' and not state['nmt']:
-            state['status'] = st.error("You cannot use the NMT mode without specifing the system you would like to use")
+            state['status'] = ("You cannot use the NMT mode without specifing the system you would like to use", "error")
             st.rerun()
-        elif state['lang'] and state['input'] and state['model'] and state['mode'] and state['k'] and state['done']:
-            state['status'] = st.error("RUNNING PIPELINE EXECUTION")
+        elif state['lang'] and state['input'] and state['model'] and state['mode'] and state['k']:
+            state['status'] = ("RUNNING PIPELINE EXECUTION", "warning")
             st.spinner(text="In progress...")
             try:
-                if state['model']:
-                    exec_pipe(state['lang'], state['input'], state['model'], state['mode'], state['executions'], state['k'], state['nmt'])
-                else:
+                if state['model'] == "Gpt4o-mini":
                     exec_pipe(state['lang'], state['input'], "", state['mode'], state['executions'], state['k'], state['nmt'])
+                else:
+                    exec_pipe(state['lang'], state['input'], state["model"], state['mode'], state['executions'], state['k'], state['nmt'])
             except Exception as e:
-                state['status'] = st.error(state['status'])
+                state['status'] = (state['status'], "error")
 
         else:
-            state['status'] = st.error("Please fill all configurations before execution")
+            state['status'] = ("Please fill all configurations before execution", "error")
             st.rerun()
 
 
