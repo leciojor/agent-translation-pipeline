@@ -1,3 +1,7 @@
+'''
+Logic to clean translation data
+'''
+
 import re
 import html
 from tqdm import tqdm
@@ -54,6 +58,9 @@ class Filter:
         return len(self.texts)
     
     def execute_all_filters(self):
+        '''
+        Executes all cleaning filters at once
+        '''
         print("Changing filters")
         for i, pair in enumerate(tqdm(self.texts, desc="Processing text pairs", unit="pair")):
             text = html.unescape(pair[0])

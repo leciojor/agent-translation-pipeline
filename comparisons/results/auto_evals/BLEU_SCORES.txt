@@ -1,0 +1,12 @@
+portuguese - BLEU SCORE FOR {'name': 'comparisons/results/gpt4_22.tsv', 'model': '', 'k': 2}: 
+ BLEU = 43.64 71.8/50.0/36.7/27.5 (BP = 1.000 ratio = 1.054 hyp_len = 1764 ref_len = 1674) 
+portuguese - BLEU SCORE FOR {'name': 'comparisons/results/gpt4_23.tsv', 'model': '', 'k': 3}: 
+ BLEU = 35.07 64.8/43.0/30.5/23.0 (BP = 0.938 ratio = 0.940 hyp_len = 1573 ref_len = 1674) 
+portuguese - BLEU SCORE FOR {'name': 'comparisons/results/gpt4_14.tsv', 'model': '', 'k': 4}: 
+ BLEU = 42.71 70.6/48.9/35.9/26.9 (BP = 1.000 ratio = 1.047 hyp_len = 1753 ref_len = 1674) 
+portuguese - BLEU SCORE FOR {'name': 'comparisons/results/nmtBing.tsv', 'model': '', 'k': 3, 'nmt': 'bing'}: 
+ BLEU = 41.03 69.4/46.9/34.1/25.5 (BP = 1.000 ratio = 1.050 hyp_len = 1757 ref_len = 1674) 
+portuguese - BLEU SCORE FOR {'name': 'comparisons/results/nmtYandex.tsv', 'model': '', 'k': 3, 'nmt': 'yandex'}: 
+ BLEU = 41.13 69.1/47.0/34.2/25.8 (BP = 1.000 ratio = 1.043 hyp_len = 1746 ref_len = 1674) 
+portuguese - BLEU SCORE FOR {'name': 'comparisons/results/nmtAlibaba.tsv', 'model': '', 'k': 3, 'nmt': 'alibaba'}: 
+ BLEU = 40.45 69.3/46.7/33.5/24.7 (BP = 1.000 ratio = 1.044 hyp_len = 1748 ref_len = 1674) 

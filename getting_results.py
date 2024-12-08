@@ -1,5 +1,5 @@
 '''
-Evaluation and collection of metrics for different pipeline setups
+Logic to retrieve results from the pipeline system with different configurations
 '''
 
 from backend.__main__ import agent_translation, system_translation
@@ -7,6 +7,13 @@ import csv
 from tqdm import tqdm
 
 def testing(tests, mode, lang):
+    '''
+    The results for each text/sentence are wrote in tsv files with the following format:
+
+    SOURCE SENTENCE FIRST ENGLISH TRANSLATION FINAL REFINED TRANSLATION
+    ...             ...                       ...
+    ...             ...                       ...
+    '''
 
     for test in tests:
         with open(f"data/cleaned/Lecio-{lang}-src.txt", 'r') as src:
@@ -33,10 +40,13 @@ def testing(tests, mode, lang):
 
 
 def main():
+    '''
+    For more information on the configurations tested, please look at the slides
+    '''
     options_llm_mode = [{"name": "comparisons/results/gpt4_22.tsv", "model":"", "k_models":2, "k":2}, {"name": "comparisons/results/gpt4_23.tsv", "k_models":2, "model":"", "k":3}, {"name": "comparisons/results/gpt4_14.tsv", "model":"", "k_models":1, "k":4}]
     options_nmt_mode = [{"name": "comparisons/results/nmtBing.tsv", "model":"", "k_models":1, "k":3, "nmt":"bing"}, {"name": "comparisons/results/nmtYandex.tsv", "model":"", "k_models":1, "k":3, "nmt":"yandex"}, {"name": "comparisons/results/nmtAlibaba.tsv", "k_models":1, "model":"", "k":3, "nmt":"alibaba"}]
     # testing([options_llm_mode[2]], agent_translation, "german")
-    testing([options_nmt_mode[0]], system_translation, "german")
+    testing([options_nmt_mode[2]], system_translation, "german")
 
 
 if __name__ == "__main__":

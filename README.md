@@ -1,6 +1,6 @@
 ### AGENT TRANSLATION PIPELINE  ###
 
-# First Steps To Execute the Pipeline Logic:
+# Steps To Execute the Pipeline Logic:
 
 * install the dependencies from requirements.txt
 * add one .env file to the root folder with the following format:
