@@ -28,6 +28,8 @@ python -m backend <source-language (portuguese/german)> <input-to-translate-to-e
 ```
 *If you want to use one of the available ollama models, you will need to make sure that ollama is running in your machine and that the respective model was downloaded locally
 
+*The pipeline mode refers 
+
 *The whole code in /backend is documented in case you would like to see how the main logic works (pipeline architecture, agents/tasks/crews definitions, etc)
 
 *I strongly recommend using the streamlit frontend for executing the logic

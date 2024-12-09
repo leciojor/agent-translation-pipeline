@@ -4,7 +4,6 @@ Main logic to get the data from the tmx files and clean it
 
 from filters import Filter
 import os
-import subprocess
 from tqdm import tqdm
 from argparse import ArgumentParser
 
