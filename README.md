@@ -26,6 +26,7 @@ streamlit run frontend.py
 ```bash
 python -m backend <source-language (portuguese/german)> <input-to-translate-to-english> <llm-base-model *leave it with empty string if the desired model it gpt4o-mini> <pipeline mode (nmt/llm)>  <amount-of-paralel-executions (integer)>  <amout-of-refinement-operations (integer)> <nmt-system (just for nmt mode)>
 ```
+*If you want to use one of the available ollama models, you will need to make sure that ollama is running in your machine and that the respective model was downloaded locally
 
 *The whole code in /backend is documented in case you would like to see how the main logic works (pipeline architecture, agents/tasks/crews definitions, etc)
 
