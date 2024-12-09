@@ -28,7 +28,7 @@ def get_final_translations(tsv_file):
 def get_comet(tsv_file, lang):
     final_translations =  get_final_translations(tsv_file)
     with open('temp.txt', 'w') as temp:
-        temp.writelines(final_translations)
+        temp.writelines(f"{line}\n" for line in final_translations)
 
     subprocess.run(['comet-score', '-s',  f"data/cleaned/Lecio-{lang}-src.txt", '-t', 'temp.txt', '-r', f"data/cleaned/Lecio-English-{lang}-tgt.txt", '--gpus', '0'], stdout=open("comparisons/results/auto_evals/comet_" + tsv_file[20:-4] + ".txt", "w"))
 
@@ -40,14 +40,15 @@ def main():
     options = [{"name": "comparisons/results/gpt4_22.tsv", "model":"", "k":2}, {"name": "comparisons/results/gpt4_23.tsv", "model":"", "k":3}, {"name": "comparisons/results/gpt4_14.tsv", "model":"", "k":4}, {"name": "comparisons/results/nmtBing.tsv", "model":"", "k":3, "nmt":"bing"}, {"name": "comparisons/results/nmtYandex.tsv", "model":"", "k":3, "nmt":"yandex"}, {"name": "comparisons/results/nmtAlibaba.tsv", "model":"", "k":3, "nmt":"alibaba"}]
 
     for lang in ['portuguese', "german"]:
+        # for option in options:
+        #     file_name = option["name"][:-4] + f"_{lang}" + ".tsv"
+        #     bleu = get_bleu(file_name, lang)
+        #     print(f"{lang} - BLEU SCORE FOR {option['name']}: {bleu}")
+
+        #     with open("comparisons/results/auto_evals/BLEU_SCORES.txt", 'a') as file:
+        #         file.write(f"{lang} - BLEU SCORE FOR {option}: \n {bleu} \n")
         for option in options:
             file_name = option["name"][:-4] + f"_{lang}" + ".tsv"
-            bleu = get_bleu(file_name, lang)
-            print(f"{lang} - BLEU SCORE FOR {option['name']}: {bleu}")
-
-            with open("comparisons/results/auto_evals/BLEU_SCORES.txt", 'a') as file:
-                file.write(f"{lang} - BLEU SCORE FOR {option}: \n {bleu} \n")
-        for option in options:
             print(f"Getting COMET for {option}")
             get_comet(file_name, lang)
         
