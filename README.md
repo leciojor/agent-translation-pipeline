@@ -34,4 +34,8 @@ python -m backend <source-language (portuguese/german)> <input-to-translate-to-e
 
 *I strongly recommend using the streamlit frontend for executing the logic
 
+![image](https://github.com/user-attachments/assets/a672926a-e587-4b49-a2d6-32ef7c98b211)
+
+![image](https://github.com/user-attachments/assets/bc480a1e-4851-45cd-abae-7e3068312227)
+
 
