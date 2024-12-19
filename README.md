@@ -28,7 +28,7 @@ python -m backend <source-language (portuguese/german)> <input-to-translate-to-e
 ```
 *If you want to use one of the available ollama models, you will need to make sure that ollama is running in your machine and that the respective model was downloaded locally
 
-*The pipeline mode refers 
+*The pipeline mode refers to what the system will use to do the initial translation from the pipeline. In case you would like an LLM to do that, chose "llm". If you would like another neural translation system to do that translation, chose "nmt" and select the system you would like to be used.
 
 *The whole code in /backend is documented in case you would like to see how the main logic works (pipeline architecture, agents/tasks/crews definitions, etc)
 
